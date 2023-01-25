@@ -1,0 +1,1 @@
+The functions in the _printf() produce output according to a format . This function returns the number of characters printed, excluding the null byte used to end output to strings. To use this fuction is needed to include the header file main.h.
