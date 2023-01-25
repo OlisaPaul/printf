@@ -1,91 +1,45 @@
 #include "main.h"
 /**
- * buffer - defines a local buffer of 1024 chars
- * @s: buffer
- * @x: char to be printed
- * @index: actual position on buffer
- * Return: return a function
+ * _printf - is a function that selects the correct function to print.
+ * @format: identifier to look for.
+ * Return: the length of the string.
  */
-void buffer(char *s, char x, int *index)
+int _printf(const char * const format, ...)
 {
-	s[*index] = x;
-	*index = *index + 1;
-	if (*index == 1024)
-	{
-		write(1, s, *index);
-		*index = 0;
-	}
-}
-/**
- * getfunction - gets the function choose
- * @c: char to find
- * Return: return a function
- */
-int (*getfunction(char c))(va_list a, char *s, int *index)
-{
-	int c1;
-	choose l[] = {
-		{'c', print_c}, {'s', print_s}, {'%', print_por}, {'i', print_id},
-		{'d', print_id}, {'b', print_bin}, {'u', print_u}, {'o', print_o},
-		{'x', print_x}, {'X', print_X}, {'S', print_S}, {'R', print_R},
-		{'r', print_r}, {'p', print_p}, {'\0', NULL}
+	convert_match m[] = {
+		{"%s", printf_string}, {"%c", printf_char},
+		{"%%", printf_37},
+		{"%i", printf_int}, {"%d", printf_dec}, {"%r", printf_srev},
+		{"%R", printf_rot13}, {"%b", printf_bin}, {"%u", printf_unsigned},
+		{"%o", printf_oct}, {"%x", printf_hex}, {"%X", printf_HEX},
+		{"%S", printf_exclusive_string}, {"%p", printf_pointer}
 	};
-	for (c1 = 0; l[c1].c != '\0'; c1++)
-	{
-		if (c == l[c1].c)
-		{
-			return (l[c1].p);
-		}
-	}
-	return (NULL);
-}
-/**
- * _printf - prints depends of the arguments.
- * @format: s for string, c for char, d for decimals, i for integers,
- * b for cast to binary, u for cast to unsigned decimal, o for print
- * in octal, x for lowercase Hexadecimal, X for Uppercase Hexadecimal,
- * p to print adresses
- * Return: new string.
- */
-int _printf(const char *format, ...)
-{
-	int c1 = 0, w = 0, x = -1, (*f)(va_list, char *s, int *m);
-	int *index;
-	char *s;
-	va_list elements;
 
-	va_start(elements, format);
-	s = malloc(1024);
-	index = &w;
-	if (!s)
+	va_list args;
+	int i = 0, j, len = 0;
+
+	va_start(args, format);
+	if (format == NULL || (format[0] == '%' && format[1] == '\0'))
 		return (-1);
-	if (format)
+
+Here:
+	while (format[i] != '\0')
 	{
-		x = 0;
-		for (; format[c1] != '\0'; c1++, x++)
+		j = 13;
+		while (j >= 0)
 		{
-			if (format[c1] != '%')
-				buffer(s, format[c1], index);
-			else if (format[c1] == '%' && format[c1 + 1] == '\0')
+			if (m[j].id[0] == format[i] && m[j].id[1] == format[i + 1])
 			{
-				return (-1);
+				len += m[j].f(args);
+				i = i + 2;
+				goto Here;
 			}
-			else if (format[c1] == '%' && format[c1 + 1] != '\0')
-			{
-				f = getfunction(format[c1 + 1]);
-				if (f)
-				{
-					x = (x + f(elements, s, index)) - 1;
-					c1++;
-				}
-				else
-					buffer(s, format[c1], index);
-			}
+			j--;
 		}
+		_putchar(format[i]);
+		len++;
+		i++;
 	}
-	if (*index != 1024)
-		write(1, s, *index);
-	free(s);
-	va_end(elements);
-	return (x);
+	va_end(args);
+	return (len);
 }
